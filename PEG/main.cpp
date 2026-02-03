@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 		QTextStream(stderr)
 			<< QString("Error: cannot open file '%1' for reading")
 				   .arg(inputFileName)
-			<< endl;
+			<< Qt::endl;
 		return 1;
 	}
 

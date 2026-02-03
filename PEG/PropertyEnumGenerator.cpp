@@ -21,6 +21,8 @@
 #include <QSet>
 #include <QStack>
 
+using Qt::endl;
+
 PEG &peg = PEG::instance();
 
 // special values that initialized in constructor

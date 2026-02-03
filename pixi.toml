@@ -11,4 +11,5 @@ version = "0.1.0"
 qt6-main = ">=6.10.2,<7"
 
 [target.win-64.dependencies]
+# it's constrainted to use visual studio generator when using this package 
 # vs2022_win-64 = "*"
