@@ -34,3 +34,6 @@ target_sources(QtnProperty PRIVATE
 qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES en zh)
 qt_add_translations(QtnProperty)
 
+
+install(TARGETS QtnProperty EXPORT QtnPropertyConfig)
+install(EXPORT QtnPropertyConfig DESTINATION cmake)
