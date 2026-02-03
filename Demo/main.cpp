@@ -1,5 +1,8 @@
 #include "MainWindow.h"
 #include <QApplication>
+#include <QTranslator>
+#include <QtnProperty/Install.h>
+#include <iostream>
 
 void regABColorDelegates();
 void regIntListDelegates();
@@ -15,10 +18,10 @@ int main(int argc, char *argv[])
 	regPenWidthDelegates();
 	regFreqDelegates();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
 	QApplication a(argc, argv);
+
+	qtnPropertyInstallTranslations(QLocale("zh"));
+
 	MainWindow w;
 	w.show();
 

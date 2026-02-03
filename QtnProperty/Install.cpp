@@ -154,7 +154,7 @@ static void qtnRegisterDefaultMetaPropertyFactory()
 
 bool qtnPropertyRegister()
 {
-	Q_INIT_RESOURCE(QtnProperty);
+	// Q_INIT_RESOURCE(QtnProperty);
 
 	qRegisterMetaType<QtnPropertyChangeReason>();
 	qRegisterMetaType<QtnPropertyBase *>();
@@ -170,7 +170,7 @@ void qtnPropertyInstallTranslations(const QLocale &locale)
 {
 	static QTranslator translator;
 	QCoreApplication::removeTranslator(&translator);
-	if (translator.load(locale, "QtnProperty.qm", "", ":/Translations"))
+	if (translator.load(locale, "QtnProperty", "_", ":/i18n"))
 	{
 		QCoreApplication::installTranslator(&translator);
 	}
