@@ -302,8 +302,7 @@ bool QtnPropertyWidgetEx::eventFilter(QObject *obj, QEvent *event)
 {
 	switch (event->type())
 	{
-		case QEvent::MouseButtonPress:
-		{
+		case QEvent::MouseButtonPress: {
 			if (draggedProperty)
 				break;
 
@@ -315,7 +314,11 @@ bool QtnPropertyWidgetEx::eventFilter(QObject *obj, QEvent *event)
 				{
 					break;
 				}
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 				dragStartPos = mevent->pos();
+#else
+				dragStartPos = mevent->position().toPoint();
+#endif
 				draggedProperty = propertyView()->getPropertyAt(dragStartPos);
 				canRemove = canDeleteProperty(draggedProperty);
 				return true;
@@ -324,8 +327,7 @@ bool QtnPropertyWidgetEx::eventFilter(QObject *obj, QEvent *event)
 			break;
 		}
 
-		case QEvent::MouseMove:
-		{
+		case QEvent::MouseMove: {
 			if (mDrag)
 				break;
 
@@ -339,7 +341,12 @@ bool QtnPropertyWidgetEx::eventFilter(QObject *obj, QEvent *event)
 			if (nullptr != draggedProperty &&
 				0 != (mevent->buttons() & Qt::LeftButton))
 			{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 				if ((mevent->pos() - dragStartPos).manhattanLength() >=
+#else
+				if ((mevent->position().toPoint() - dragStartPos)
+						.manhattanLength() >=
+#endif
 					QApplication::startDragDistance())
 				{
 					dragAndDrop();
@@ -383,10 +390,13 @@ void QtnPropertyWidgetEx::dropEvent(QDropEvent *event)
 	switch (event->dropAction())
 	{
 		case Qt::MoveAction:
-		case Qt::CopyAction:
-		{
+		case Qt::CopyAction: {
 			auto view = propertyView();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			auto pos = view->mapFrom(this, event->pos());
+#else
+			auto pos = view->mapFrom(this, event->position().toPoint());
+#endif
 			QRect rect;
 			auto destination = view->getPropertyAt(pos, &rect);
 

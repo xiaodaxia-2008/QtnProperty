@@ -1,0 +1,22 @@
+适用于 .NET Framework MSBuild 版本 17.14.23+b0019275e
+
+  Automatic MOC and UIC for target QtnProperty
+  QtnProperty.vcxproj -> C:\AppSource\QtnProperty\build\QtnProperty\Debug\QtnProperty.dll
+  Automatic MOC and UIC for target QtnPropertyDemo
+mocs_compilation_Debug.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnProperty::staticMetaObject" (?staticMetaObject@QtnProperty@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+mocs_compilation_Debug.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyQColorBase::staticMetaObject" (?staticMetaObject@QtnPropertyQColorBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+mocs_compilation_Debug.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyQColor::staticMetaObject" (?staticMetaObject@QtnPropertyQColor@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+mocs_compilation_Debug.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertySet::staticMetaObject" (?staticMetaObject@QtnPropertySet@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+PropertyDelegateIntList.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyIntBase::staticMetaObject" (?staticMetaObject@QtnPropertyIntBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+PropertyDelegateLayer.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyBase::staticMetaObject" (?staticMetaObject@QtnPropertyBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+PropertyDelegatePenWidth.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyBase::staticMetaObject" (?staticMetaObject@QtnPropertyBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+Demo.peg.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyBase::staticMetaObject" (?staticMetaObject@QtnPropertyBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+C:\AppSource\QtnProperty\build\Demo\Debug\QtnPropertyDemo.exe : fatal error LNK1120: 6 unresolved externals [C:\AppSource\QtnProperty\build\Demo\QtnPropertyDemo.vcxproj]
+  Automatic MOC and UIC for target QtnPropertyTests
+mocs_compilation_Debug.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertySet::staticMetaObject" (?staticMetaObject@QtnPropertySet@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]
+TestProperty.obj : error LNK2001: unresolved external symbol "int const QtnPropertyIDInvalid" (?QtnPropertyIDInvalid@@3HB) [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]
+TestProperty.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyBase::staticMetaObject" (?staticMetaObject@QtnPropertyBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]
+test.peg.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyBase::staticMetaObject" (?staticMetaObject@QtnPropertyBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]
+TestProperty.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnPropertyQStringBase::staticMetaObject" (?staticMetaObject@QtnPropertyQStringBase@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]
+test.peg.obj : error LNK2001: unresolved external symbol "public: static struct QMetaObject const QtnProperty::staticMetaObject" (?staticMetaObject@QtnProperty@@2UQMetaObject@@B) [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]
+C:\AppSource\QtnProperty\build\Tests\Debug\QtnPropertyTests.exe : fatal error LNK1120: 5 unresolved externals [C:\AppSource\QtnProperty\build\Tests\QtnPropertyTests.vcxproj]

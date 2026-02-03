@@ -53,8 +53,10 @@ QtnPropertyState qtnPropertyStateToAdd(const QMetaProperty &metaProperty)
 {
 	QtnPropertyState toAdd;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (!metaProperty.isDesignable())
 		toAdd |= QtnPropertyStateInvisible;
+#endif
 
 	if (metaProperty.isConstant() ||
 		(!metaProperty.isWritable() && !metaProperty.isResettable()))
@@ -79,7 +81,7 @@ QtnProperty *qtnCreateQObjectProperty(QObject *object,
 
 	auto &map = qtnFactoryMap();
 
-	auto it = map.find(metaProperty.type());
+	auto it = map.find(metaProperty.userType());
 
 	if (it == map.end())
 		it = map.find(metaProperty.userType());
@@ -87,8 +89,13 @@ QtnProperty *qtnCreateQObjectProperty(QObject *object,
 	if (it == map.end())
 		return nullptr;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (!metaProperty.isDesignable(object) || !metaProperty.isReadable())
 		return nullptr;
+#else
+	if (!metaProperty.isReadable())
+		return nullptr;
+#endif
 
 	QtnProperty *property = it.value()(object, metaProperty);
 
@@ -171,7 +178,7 @@ QtnPropertySet *qtnCreateQObjectPropertySet(QObject *object, bool backwards)
 
 			for (int propertyIndex = metaObject->propertyOffset(),
 					 n = metaObject->propertyCount();
-				 propertyIndex < n; ++propertyIndex)
+				propertyIndex < n; ++propertyIndex)
 			{
 				auto metaProperty = metaObject->property(propertyIndex);
 				auto property = qtnCreateQObjectProperty(

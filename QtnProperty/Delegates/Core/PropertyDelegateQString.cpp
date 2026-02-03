@@ -411,7 +411,9 @@ bool QtnPropertyDelegateQStringFile::isPropertyValid() const
 			return QFileInfo(filePath).isFile();
 
 		case QFileDialog::Directory:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QFileDialog::DirectoryOnly:
+#endif
 			return QFileInfo(filePath).isDir();
 	}
 
@@ -524,7 +526,9 @@ QtnPropertyQStringListComboBoxHandler::QtnPropertyQStringListComboBoxHandler(
 	editor.clear();
 	editor.addItems(items);
 	editor.setEditable(editable);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	editor.setAutoCompletion(false);
+#endif
 
 	if (editable)
 		editor.installEventFilter(this);
@@ -1079,17 +1083,27 @@ bool QtnPropertyQStringCandidatesComboBoxHandler::eventFilter(
 		case QEvent::MouseButtonPress:
 		case QEvent::MouseButtonRelease:
 		case QEvent::MouseMove:
-		case QEvent::MouseButtonDblClick:
-		{
+		case QEvent::MouseButtonDblClick: {
 			auto me = static_cast<QMouseEvent *>(event);
 			auto toolButton = editor().toolButton;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			auto localPos = toolButton->mapFromGlobal(me->globalPos());
+#else
+			auto localPos =
+				toolButton->mapFromGlobal(me->globalPosition().toPoint());
+#endif
 			if (toolButton->rect().contains(localPos))
 			{
 				QObject *toolButtonObject = toolButton;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 				QMouseEvent buttonEvent(event->type(), localPos,
 					me->windowPos(), me->globalPos(), me->button(),
 					me->buttons(), me->modifiers(), me->source());
+#else
+				QMouseEvent buttonEvent(event->type(), QPointF(localPos),
+					me->scenePosition(), me->globalPosition(), me->button(),
+					me->buttons(), me->modifiers(), me->source());
+#endif
 				toolButtonObject->event(&buttonEvent);
 				return true;
 			}

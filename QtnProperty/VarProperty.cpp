@@ -124,7 +124,11 @@ VarProperty::Type VarProperty::GetTypeFromValue(const QVariant &value)
 {
 	Type type;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	switch (value.type())
+#else
+	switch (value.typeId())
+#endif
 	{
 		case QVariant::Hash:
 		case QVariant::Map:
@@ -149,21 +153,42 @@ VarProperty::Type VarProperty::GetType() const
 	return type;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QVariant::Type VarProperty::GetVariantType() const
+#else
+QMetaType::Type VarProperty::GetVariantType() const
+#endif
 {
 	switch (type)
 	{
 		case Value:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			return value.type();
+#else
+			return QMetaType::fromType<int>().id() == value.typeId()
+				? QMetaType::Type::Int
+				: static_cast<QMetaType::Type>(value.typeId());
+#endif
 
 		case List:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			return QVariant::List;
-
+#else
+			return QMetaType::QVariantList;
+#endif
 		case Map:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			return QVariant::Map;
+#else
+			return QMetaType::QVariantMap;
+#endif
 	}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	return QVariant::Invalid;
+#else
+	return QMetaType::UnknownType;
+#endif
 }
 
 int VarProperty::GetIndex() const
@@ -268,8 +293,7 @@ QVariant VarProperty::CreateVariant() const
 {
 	switch (type)
 	{
-		case List:
-		{
+		case List: {
 			QVariantList list;
 
 			for (auto child : varChildren)
@@ -280,8 +304,7 @@ QVariant VarProperty::CreateVariant() const
 			return QVariant(list);
 		}
 
-		case Map:
-		{
+		case Map: {
 			QVariantMap map;
 
 			for (auto child : varChildren)
@@ -325,26 +348,27 @@ QtnPropertyBase *VarProperty::NewExtraProperty(QtnPropertySet *set,
 	if (index >= 0)
 		name = QString("[%1]").arg(QString::number(index));
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	auto type = value.type();
+#else
+	auto type = value.typeId();
+#endif
 
 	switch (type)
 	{
 		case QVariant::Hash:
-		case QVariant::Map:
-		{
+		case QVariant::Map: {
 			return NewExtraPropertySet(
 				set, value.toMap(), mapParent, name, index, registerProperty);
 		}
 
 		case QVariant::StringList:
-		case QVariant::List:
-		{
+		case QVariant::List: {
 			return NewExtraPropertyList(
 				set, value.toList(), mapParent, name, index, registerProperty);
 		}
 
-		case QVariant::Int:
-		{
+		case QVariant::Int: {
 			auto p = new QtnPropertyInt(set);
 
 			p->setId(PID_EXTRA_INT);
@@ -354,8 +378,7 @@ QtnPropertyBase *VarProperty::NewExtraProperty(QtnPropertySet *set,
 			break;
 		}
 
-		case QVariant::UInt:
-		{
+		case QVariant::UInt: {
 			auto p = new QtnPropertyUInt(set);
 
 			p->setId(PID_EXTRA_UINT);
@@ -367,8 +390,7 @@ QtnPropertyBase *VarProperty::NewExtraProperty(QtnPropertySet *set,
 
 		case QVariant::LongLong:
 		case QVariant::ULongLong:
-		case QVariant::Double:
-		{
+		case QVariant::Double: {
 			auto p = new QtnPropertyDouble(set);
 
 			p->setId(PID_EXTRA_FLOAT);
@@ -378,8 +400,7 @@ QtnPropertyBase *VarProperty::NewExtraProperty(QtnPropertySet *set,
 			break;
 		}
 
-		case QVariant::Bool:
-		{
+		case QVariant::Bool: {
 			auto p = new QtnPropertyBool(set);
 
 			p->setId(PID_EXTRA_BOOL);
@@ -389,8 +410,7 @@ QtnPropertyBase *VarProperty::NewExtraProperty(QtnPropertySet *set,
 			break;
 		}
 
-		default:
-		{
+		default: {
 			auto p = new QtnPropertyQString(set);
 
 			p->setId(PID_EXTRA_STRING);
@@ -431,8 +451,7 @@ bool VarProperty::PropertyValueAccept(
 		case VarProperty::PID_EXTRA_INT:
 		case VarProperty::PID_EXTRA_UINT:
 		case VarProperty::PID_EXTRA_FLOAT:
-		case VarProperty::PID_EXTRA_BOOL:
-		{
+		case VarProperty::PID_EXTRA_BOOL: {
 			auto var_property = property->findChild<VarProperty *>(
 				QString(), Qt::FindDirectChildrenOnly);
 
@@ -444,7 +463,7 @@ bool VarProperty::PropertyValueAccept(
 				{
 					case PID_EXTRA_STRING:
 						value = QVariant(*(QtnPropertyQString::ValueTypeStore *)
-											 valueToAccept);
+								valueToAccept);
 						break;
 
 					case PID_EXTRA_INT:

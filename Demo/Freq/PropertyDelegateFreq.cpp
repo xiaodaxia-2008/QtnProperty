@@ -50,8 +50,13 @@ static QString freqUnit2Str(FreqUnit unit)
 void QtnPropertyDelegateFreq::createSubItemValuesImpl(
 	QtnDrawContext &context, const QRect &rect, QList<QtnSubItem> &subItems)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	auto unitWidth = context.painter->fontMetrics().width("MHz");
 	auto spaceWidth = context.painter->fontMetrics().width(" ");
+#else
+	auto unitWidth = context.painter->fontMetrics().horizontalAdvance("MHz");
+	auto spaceWidth = context.painter->fontMetrics().horizontalAdvance(" ");
+#endif
 
 	auto valueRect = rect;
 	valueRect.setRight(valueRect.right() - unitWidth - spaceWidth);

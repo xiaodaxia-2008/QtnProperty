@@ -254,13 +254,21 @@ void PropertySetCode::setDestructorCode(QString _name, QString _code)
 void PropertySetCode::generateHFile(TextStreamIndent &s) const
 {
 	generateSubPropertySetsDeclarations(s);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("class %1: public QtnPropertySet").arg(selfType);
 	s.newLine() << "{";
 	s.addIndent();
 	s.newLine() << "Q_OBJECT";
 	s.newLine() << QString("//Q_DISABLE_COPY(%1)").arg(selfType);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine(-1) << "public:";
 	s.newLine() << "// constructor declaration";
 	s.newLine() << QString("explicit %1(QObject* parent = %2);")
@@ -271,7 +279,11 @@ void PropertySetCode::generateHFile(TextStreamIndent &s) const
 	s.newLine() << "// assignment declaration";
 	s.newLine() << QString("%1& operator=(const %1& other);").arg(selfType);
 	generateChildrenDeclaration(s);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine(-1) << "protected:";
 	s.newLine() << "// cloning implementation";
 	s.newLine() << QString(
@@ -282,7 +294,11 @@ void PropertySetCode::generateHFile(TextStreamIndent &s) const
 	s.newLine() << QString("bool copyValuesImpl(QtnPropertySet* "
 						   "propertySetCopyFrom, QtnPropertyState ignoreMask) "
 						   "override;");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine(-1) << "private:";
 	s.newLine() << "void init();";
 	s.newLine() << "void connectSlots();";
@@ -299,7 +315,11 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	generateSubPropertySetsImplementations(s);
 
 	// constructor implementation
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("%1::%1(QObject* parent)").arg(selfType);
 	s.addIndent();
 	s.newLine() << QString(": QtnPropertySet(parent)");
@@ -317,7 +337,11 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	s.newLine() << "}";
 
 	// destructor implementation
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << selfType << "::~" << selfType << "()";
 	s.newLine() << "{";
 	s.addIndent();
@@ -328,19 +352,35 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	s.newLine() << "}";
 
 	// assignment implementation
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("%1& %1::operator=(const %1& other)").arg(selfType);
 	s.newLine() << "{";
 	s.addIndent();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s.newLine() << "Q_UNUSED(other);" << endl;
+#else
+	s.newLine() << "Q_UNUSED(other);" << Qt::endl;
+#endif
 	generateChildrenCopy(s);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << "return *this;";
 	s.delIndent();
 	s.newLine() << "}";
 
 	// cloning implementation
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString(
 		"QtnPropertySet* %1::createNewImpl(QObject* parentForNew) const")
 					   .arg(selfType);
@@ -349,7 +389,11 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	s.newLine() << QString("return new %1(parentForNew);").arg(selfType);
 	s.delIndent();
 	s.newLine() << "}";
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString(
 		"QtnPropertySet* %1::createCopyImpl(QObject* parentForCopy) const")
 					   .arg(selfType);
@@ -362,7 +406,11 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	s.newLine() << "}";
 
 	// copy values implementation
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("bool %1::copyValuesImpl(QtnPropertySet* "
 						   "propertySetCopyFrom, QtnPropertyState ignoreMask)")
 					   .arg(selfType);
@@ -374,7 +422,11 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	s.newLine() << "}";
 
 	// initialization
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << "void " << selfType << "::init()";
 	s.newLine() << "{";
 	s.addIndent();
@@ -387,14 +439,22 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	s.newLine() << "}";
 
 	// slots connect/disconnect
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("void %1::connectSlots()").arg(selfType);
 	s.newLine() << "{";
 	s.addIndent();
 	generateSlotsConnections(s, "connect");
 	s.delIndent();
 	s.newLine() << "}";
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("void %1::disconnectSlots()").arg(selfType);
 	s.newLine() << "{";
 	s.addIndent();
@@ -404,7 +464,11 @@ void PropertySetCode::generateCppFile(TextStreamIndent &s) const
 	generateSlotsImplementation(s);
 
 	// delegates connects
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 	s.newLine() << QString("void %1::connectDelegates()").arg(selfType);
 	s.newLine() << "{";
 	s.addIndent();
@@ -512,7 +576,7 @@ void PropertySetCode::generateSlotsDeclaration(TextStreamIndent &s) const
 			continue;
 
 		for (auto jt = (*it)->slots_code.begin(); jt != (*it)->slots_code.end();
-			 ++jt)
+			++jt)
 		{
 			s.newLine() << QString("void %1(%2);")
 							   .arg(slotName(jt.key(), &(*it)->name,
@@ -527,7 +591,11 @@ void PropertySetCode::generateSlotsImplementation(TextStreamIndent &s) const
 {
 	for (auto it = slots_code.begin(); it != slots_code.end(); ++it)
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		s << endl;
+#else
+		s << Qt::endl;
+#endif
 		s.newLine() << QString("void %1::%2(%3)")
 						   .arg(selfType,
 							   slotName(it.key(), &it.value().member, nullptr),
@@ -546,9 +614,13 @@ void PropertySetCode::generateSlotsImplementation(TextStreamIndent &s) const
 			continue;
 
 		for (auto jt = (*it)->slots_code.begin(); jt != (*it)->slots_code.end();
-			 ++jt)
+			++jt)
 		{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			s << endl;
+#else
+			s << Qt::endl;
+#endif
 			s.newLine() << QString("void %1::%2(%3)")
 							   .arg(selfType,
 								   slotName(jt.key(), &(*it)->name,
@@ -629,7 +701,11 @@ void PropertySetCode::generateCopyValues(TextStreamIndent &s) const
 					   .arg(selfType);
 	s.newLine() << "if (!theCopyFrom)";
 	s.newLine(1) << "return false;";
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	s << endl;
+#else
+	s << Qt::endl;
+#endif
 
 	Q_ASSERT(members.size() >= subPropertySets.size());
 	auto mIt = members.begin();
@@ -654,7 +730,11 @@ void PropertySetCode::generateCopyValues(TextStreamIndent &s) const
 			s.newLine() << "}";
 		}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		s << endl;
+#else
+		s << Qt::endl;
+#endif
 	}
 
 	s.newLine() << "return true;";
@@ -695,7 +775,7 @@ void PropertySetCode::generateSlotsConnections(
 			continue;
 
 		for (auto jt = (*it)->slots_code.begin(); jt != (*it)->slots_code.end();
-			 ++jt)
+			++jt)
 		{
 			s.newLine() << QString(
 				"QObject::%1(%2, &QtnProperty::%3, this, &%4::%5);")

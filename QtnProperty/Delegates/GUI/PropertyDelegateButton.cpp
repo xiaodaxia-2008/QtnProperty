@@ -70,7 +70,6 @@ void QtnPropertyDelegateButton::createSubItemsImpl(
 
 	buttonItem.drawHandler = [this](QtnDrawContext &context,
 								 const QtnSubItem &item) {
-
 		auto style = context.style();
 
 		QStyleOptionButton option;
@@ -139,29 +138,31 @@ void QtnPropertyDelegateButtonLink::createSubItemsImpl(
 	QtnDrawContext &context, QList<QtnSubItem> &subItems)
 {
 	QtnSubItem linkItem(context.rect.marginsRemoved(context.margins));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	linkItem.rect.setWidth(context.painter->fontMetrics().width(m_title));
+#else
+	linkItem.rect.setWidth(
+		context.painter->fontMetrics().horizontalAdvance(m_title));
+#endif
 	linkItem.setPropertyDescriptionAsTooltip(owner());
 	linkItem.trackState();
 
 	linkItem.drawHandler = [this](QtnDrawContext &context,
 							   const QtnSubItem &item) {
-
 		context.painter->save();
 
 		QColor linkColor = context.palette().color(context.colorGroup(),
 			context.isActive ? QPalette::HighlightedText : QPalette::Link);
 		switch (item.state())
 		{
-			case QtnSubItemStateUnderCursor:
-			{
+			case QtnSubItemStateUnderCursor: {
 				auto font = context.painter->font();
 				font.setUnderline(true);
 				context.painter->setFont(font);
 				break;
 			}
 
-			case QtnSubItemStatePushed:
-			{
+			case QtnSubItemStatePushed: {
 				auto font = context.painter->font();
 				font.setUnderline(true);
 				context.painter->setFont(font);
@@ -191,28 +192,24 @@ void QtnPropertyDelegateButtonLink::createSubItemsImpl(
 		bool doClick = false;
 		switch (context.eventType())
 		{
-			case QEvent::KeyPress:
-			{
+			case QEvent::KeyPress: {
 				int key = context.eventAs<QKeyEvent>()->key();
 				doClick = (key == Qt::Key_Space) || (key == Qt::Key_Return);
 				break;
 			}
 
-			case QtnSubItemEvent::Activated:
-			{
+			case QtnSubItemEvent::Activated: {
 				m_widgetCursor = context.widget->cursor();
 				context.widget->setCursor(Qt::PointingHandCursor);
 				break;
 			}
 
-			case QtnSubItemEvent::Deactivated:
-			{
+			case QtnSubItemEvent::Deactivated: {
 				context.widget->setCursor(m_widgetCursor);
 				break;
 			}
 
-			case QtnSubItemEvent::ReleaseMouse:
-			{
+			case QtnSubItemEvent::ReleaseMouse: {
 				doClick = true;
 				break;
 			}

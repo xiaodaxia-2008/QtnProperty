@@ -41,7 +41,11 @@ static const QString kCustomPropertyData =
 QtnCustomPropertyWidget::QtnCustomPropertyWidget(QWidget *parent)
 	: QtnPropertyWidgetEx(parent)
 	, dataPtr(nullptr)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	, lastAddType(QVariant::Invalid)
+#else
+	, lastAddType(QMetaType::UnknownType)
+#endif
 	, readOnly(false)
 	, autoUpdate(false)
 	, backupAutoUpdate(false)
@@ -140,15 +144,13 @@ void QtnCustomPropertyWidget::addProperty()
 
 		switch (var_property->GetType())
 		{
-			case VarProperty::List:
-			{
+			case VarProperty::List: {
 				dialog.setWindowTitle(tr("New Element"));
 				dialog.initWithCount(-1, var_property->GetChildrenCount());
 				break;
 			}
 
-			case VarProperty::Map:
-			{
+			case VarProperty::Map: {
 				dialog.setWindowTitle(tr("New Property"));
 				dialog.initWithName(QString(),
 					std::bind(&VarProperty::IsChildNameAvailable, var_property,
@@ -164,7 +166,12 @@ void QtnCustomPropertyWidget::addProperty()
 
 		if (dialog.execute(result_data))
 		{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			lastAddType = result_data.value.type();
+#else
+			lastAddType =
+				static_cast<QMetaType::Type>(result_data.value.typeId());
+#endif
 			addProperty(property, result_data);
 		}
 	}
@@ -187,16 +194,14 @@ void QtnCustomPropertyWidget::duplicateProperty()
 
 		switch (var_parent->GetType())
 		{
-			case VarProperty::List:
-			{
+			case VarProperty::List: {
 				dialog.setWindowTitle(tr("Duplicate Element"));
 				dialog.initWithCount(
 					var_property->GetIndex(), var_parent->GetChildrenCount());
 				break;
 			}
 
-			case VarProperty::Map:
-			{
+			case VarProperty::Map: {
 				dialog.setWindowTitle(tr("Duplicate Property"));
 				dialog.initWithName(var_property->GetName(),
 					std::bind(&VarProperty::IsChildNameAvailable, var_parent,
@@ -238,16 +243,14 @@ void QtnCustomPropertyWidget::propertyOptions()
 		{
 			switch (var_parent->GetType())
 			{
-				case VarProperty::List:
-				{
+				case VarProperty::List: {
 					dialog.setWindowTitle(tr("Element Options"));
 					dialog.initWithCount(var_property->GetIndex(),
 						var_parent->GetChildrenCount() - 1);
 					break;
 				}
 
-				case VarProperty::Map:
-				{
+				case VarProperty::Map: {
 					dialog.initWithName(var_property->GetName(),
 						std::bind(&VarProperty::IsChildNameAvailable,
 							var_parent, std::placeholders::_1, var_property));
@@ -269,7 +272,11 @@ void QtnCustomPropertyWidget::propertyOptions()
 		{
 			auto old_data = var_property->CreateVariant();
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			switch (result_data.value.type())
+#else
+			switch (result_data.value.userType())
+#endif
 			{
 				case QVariant::Bool:
 					result_data.value = old_data.toBool();
@@ -297,8 +304,7 @@ void QtnCustomPropertyWidget::propertyOptions()
 					{
 						switch (var_property->GetType())
 						{
-							case VarProperty::List:
-							{
+							case VarProperty::List: {
 								if (result_data.value.type() == QVariant::Map)
 								{
 									old_data.clear();
@@ -317,8 +323,7 @@ void QtnCustomPropertyWidget::propertyOptions()
 								break;
 							}
 
-							case VarProperty::Map:
-							{
+							case VarProperty::Map: {
 								if (result_data.value.type() == QVariant::List)
 								{
 									old_data.clear();
@@ -428,8 +433,7 @@ QMimeData *QtnCustomPropertyWidget::getPropertyDataForAction(
 		{
 			case Qt::MoveAction:
 			case Qt::CopyAction:
-			case Qt::IgnoreAction:
-			{
+			case Qt::IgnoreAction: {
 				auto mime = new QMimeData;
 
 				auto variant = varProperty->CreateVariant();
@@ -449,7 +453,12 @@ QMimeData *QtnCustomPropertyWidget::getPropertyDataForAction(
 					QString::fromUtf8(&json.constData()[start], end - start)
 						.trimmed());
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 				mime->setData(kCustomPropertyData, doc.toBinaryData());
+#else
+				mime->setData(
+					kCustomPropertyData, doc.toJson(QJsonDocument::Compact));
+#endif
 
 				return mime;
 			}
@@ -514,8 +523,7 @@ bool QtnCustomPropertyWidget::insertReplaceOrCancel(
 
 	switch (choice)
 	{
-		case INSERT:
-		{
+		case INSERT: {
 			if (insertDestination == destination)
 			{
 				switch (varProperty->GetType())
@@ -537,8 +545,7 @@ bool QtnCustomPropertyWidget::insertReplaceOrCancel(
 			break;
 		}
 
-		case REPLACE:
-		{
+		case REPLACE: {
 			customData.name = varProperty->GetName();
 			updatePropertyOptions(destination, customData);
 			break;
@@ -566,7 +573,11 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 		if (data->hasFormat(kCustomPropertyData))
 		{
 			auto doc =
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 				QJsonDocument::fromBinaryData(data->data(kCustomPropertyData));
+#else
+				QJsonDocument::fromJson(data->data(kCustomPropertyData));
+#endif
 
 			if (doc.isObject())
 			{
@@ -589,8 +600,7 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 					switch (position)
 					{
 						case QtnApplyPosition::Before:
-						case QtnApplyPosition::After:
-						{
+						case QtnApplyPosition::After: {
 							if (varProperty != varProperty->TopParent())
 							{
 								auto parent_prop =
@@ -603,8 +613,7 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 								}
 								switch (getVarProperty(parent_prop)->GetType())
 								{
-									case VarProperty::Map:
-									{
+									case VarProperty::Map: {
 										customData.index = -1;
 										customData.name = it.key();
 										addProperty(parent_prop, customData);
@@ -612,8 +621,7 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 										break;
 									}
 
-									case VarProperty::List:
-									{
+									case VarProperty::List: {
 										customData.name.clear();
 
 										customData.index = insertIndex;
@@ -634,16 +642,14 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 							break;
 						}
 
-						case QtnApplyPosition::Over:
-						{
+						case QtnApplyPosition::Over: {
 							if (!destination->isWritable())
 							{
 								break;
 							}
 							switch (varProperty->GetType())
 							{
-								case VarProperty::Map:
-								{
+								case VarProperty::Map: {
 									customData.index = -1;
 									customData.name = it.key();
 									addProperty(destination, customData);
@@ -651,8 +657,7 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 									break;
 								}
 
-								case VarProperty::List:
-								{
+								case VarProperty::List: {
 									customData.name.clear();
 									customData.index =
 										varProperty->GetChildrenCount();
@@ -668,8 +673,7 @@ bool QtnCustomPropertyWidget::applyPropertyData(const QMimeData *data,
 							break;
 						}
 
-						case QtnApplyPosition::None:
-						{
+						case QtnApplyPosition::None: {
 							if (!destination->isWritable())
 							{
 								break;

@@ -18,7 +18,11 @@
 
 #include <QCoreApplication>
 #include <QFileInfo>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QRegExp>
+#else
+#include <QRegularExpression>
+#endif
 
 extern int yyparse();
 extern FILE *yyin;
@@ -30,14 +34,20 @@ int main(int argc, char *argv[])
 
 	// Qt application
 	QCoreApplication app(argc, argv);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	app.setAttribute(Qt::AA_Use96Dpi, true);
+#endif
 
 	// check argument
 	if (argc < 2 || argc > 4)
 	{
 		QTextStream(stdout) << QString("peg usage: peg <input file> [<cpp "
 									   "output file> [h output file]]")
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 							<< endl;
+#else
+							<< Qt::endl;
+#endif
 		return 0;
 	}
 
@@ -48,7 +58,11 @@ int main(int argc, char *argv[])
 	{
 		QTextStream(stderr) << QString("Error: file '%1' doesn't exist")
 								   .arg(fi.absoluteFilePath())
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 							<< endl;
+#else
+							<< Qt::endl;
+#endif
 		return 1;
 	}
 
@@ -68,7 +82,11 @@ int main(int argc, char *argv[])
 	} else if (argc < 4)
 	{
 		hFileName = cppFileName;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		hFileName.replace(QRegExp(".cpp$"), ".h");
+#else
+		hFileName.replace(QRegularExpression(".cpp$"), ".h");
+#endif
 	} else
 	{
 		hFileName = argv[3];

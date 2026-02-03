@@ -309,9 +309,9 @@ bool QtnPropertySet::copyValuesImpl(
 bool QtnPropertySet::fromStrImpl(
 	const QString &str, QtnPropertyChangeReason reason)
 {
-	static QRegExp parserLine(QStringLiteral("^\\s*([^=]+)=(.*)$"));
+	static QRegularExpression parserLine(QStringLiteral("^\\s*([^=]+)=(.*)$"));
 
-	QStringList lines = str.split(QChar::LineFeed, QString::SkipEmptyParts);
+	QStringList lines = str.split(QChar::LineFeed, Qt::SkipEmptyParts);
 
 	if (lines.isEmpty())
 		return true;
@@ -320,14 +320,15 @@ bool QtnPropertySet::fromStrImpl(
 
 	for (const auto &line : lines)
 	{
-		if (!parserLine.exactMatch(line))
+		auto match = parserLine.match(line);
+		if (!match.hasMatch())
 		{
 			qDebug() << "Cannot parse string: " << line;
 			ok = false;
 			continue;
 		}
 
-		QStringList params = parserLine.capturedTexts();
+		QStringList params = match.capturedTexts();
 		if (params.size() != 3)
 		{
 			qDebug() << "Cannot parse string: " << line;
@@ -502,7 +503,7 @@ bool QtnPropertySet::toStrImpl(QString &str) const
 bool QtnPropertySet::fromVariantImpl(
 	const QVariant &v, QtnPropertyChangeReason reason)
 {
-	if (!v.isValid() || v.type() == QVariant::Map)
+	if (!v.isValid() || v.userType() == QMetaType::QVariantMap)
 	{
 		return fromJson(QJsonObject::fromVariantMap(v.toMap()), reason);
 	}
@@ -647,7 +648,7 @@ bool QtnPropertySet::toStrWithPrefix(QString &str, const QString &prefix) const
 				return false;
 
 			str.append(QStringLiteral("%1%2 = %3\n")
-						   .arg(prefix, childProperty->name(), strValue));
+					.arg(prefix, childProperty->name(), strValue));
 		} else
 		{
 			auto childPropertySet = childPropertyBase->asPropertySet();

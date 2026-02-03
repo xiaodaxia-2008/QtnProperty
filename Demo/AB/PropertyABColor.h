@@ -43,31 +43,46 @@ Q_SIGNALS:
 
 struct MyColor
 {
-    int red = 0;
-    int green = 0;
-    int blue = 0;
+	int red = 0;
+	int green = 0;
+	int blue = 0;
+
+	inline bool operator==(const MyColor &other) const
+	{
+		return (red == other.red) && (green == other.green) &&
+			(blue == other.blue);
+	}
+
+	inline bool operator!=(const MyColor &other) const
+	{
+		return !operator==(other);
+	}
 };
 
-using QtnPropertyMyColorBase = QtnSinglePropertyBaseAs<QtnPropertyQColorBase, MyColor>;
+using QtnPropertyMyColorBase =
+	QtnSinglePropertyBaseAs<QtnPropertyQColorBase, MyColor>;
 
 class QtnPropertyMyColor : public QtnSinglePropertyValue<QtnPropertyMyColorBase>
 {
-    Q_OBJECT
+	Q_OBJECT
 
 private:
-    QtnPropertyMyColor(const QtnPropertyMyColor &other) Q_DECL_EQ_DELETE;
+	QtnPropertyMyColor(const QtnPropertyMyColor &other) Q_DECL_EQ_DELETE;
 
 public:
-    explicit QtnPropertyMyColor(QObject *parent = nullptr)
-        : QtnSinglePropertyValue<QtnPropertyMyColorBase>(parent)
-    {
-    }
+	explicit QtnPropertyMyColor(QObject *parent = nullptr)
+		: QtnSinglePropertyValue<QtnPropertyMyColorBase>(parent)
+	{
+	}
 
 protected:
-    bool fromActualValue(ValueType actualValue, BaseValueTypeStore& baseValue) const override;
-    bool toActualValue(ValueTypeStore& actualValue, BaseValueType baseValue) const override;
+	bool fromActualValue(
+		ValueType actualValue, BaseValueTypeStore &baseValue) const override;
+	bool toActualValue(
+		ValueTypeStore &actualValue, BaseValueType baseValue) const override;
 
-    P_PROPERTY_DECL_MEMBER_OPERATORS2(QtnPropertyMyColor, QtnPropertyMyColorBase)
+	P_PROPERTY_DECL_MEMBER_OPERATORS2(
+		QtnPropertyMyColor, QtnPropertyMyColorBase)
 };
 
 #endif // PROPERTY_AB_COLOR_H

@@ -490,7 +490,11 @@ void QtnPropertyView::mousePressEvent(QMouseEvent *e)
 	m_mouseCaptured = false;
 	if (e->button() == Qt::RightButton)
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		auto property = getPropertyAt(e->pos());
+#else
+		auto property = getPropertyAt(e->position().toPoint());
+#endif
 		setActiveProperty(property, true);
 		QAbstractScrollArea::mousePressEvent(e);
 		return;
@@ -502,11 +506,20 @@ void QtnPropertyView::mousePressEvent(QMouseEvent *e)
 		return;
 	}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	int index = visibleItemIndexByPoint(e->pos());
 	bool isSplittableItem = index >= 0
 		? m_visibleItems.at(index).item->delegate->isSplittable()
 		: false;
 	if (isSplittableItem && qAbs(e->x() - splitPosition()) < TOLERANCE)
+#else
+	int index = visibleItemIndexByPoint(e->position().toPoint());
+	bool isSplittableItem = index >= 0
+		? m_visibleItems.at(index).item->delegate->isSplittable()
+		: false;
+	if (isSplittableItem &&
+		qAbs(e->position().toPoint().x() - splitPosition()) < TOLERANCE)
+#endif
 	{
 		m_rubberBand.reset(new QRubberBand(QRubberBand::Line, this));
 
@@ -520,7 +533,12 @@ void QtnPropertyView::mousePressEvent(QMouseEvent *e)
 		if (index >= 0)
 		{
 			changeActivePropertyByIndex(index);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			m_mouseCaptured = handleMouseEvent(index, e, e->pos());
+#else
+			m_mouseCaptured =
+				handleMouseEvent(index, e, e->position().toPoint());
+#endif
 		}
 	}
 	QAbstractScrollArea::mousePressEvent(e);
@@ -543,7 +561,12 @@ void QtnPropertyView::mouseReleaseEvent(QMouseEvent *e)
 		updateSplitRatio((float) (e->x() - rect.left()) / (float) rect.width());
 	} else
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		handleMouseEvent(visibleItemIndexByPoint(e->pos()), e, e->pos());
+#else
+		handleMouseEvent(visibleItemIndexByPoint(e->position().toPoint()), e,
+			e->position().toPoint());
+#endif
 		emit mouseReleased(e);
 	}
 
@@ -572,13 +595,21 @@ void QtnPropertyView::mouseMoveEvent(QMouseEvent *e)
 		}
 	} else
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		int index = visibleItemIndexByPoint(e->pos());
+#else
+		int index = visibleItemIndexByPoint(e->position().toPoint());
+#endif
 		bool isSplittable = index >= 0
 			? m_visibleItems.at(index).item->delegate->isSplittable()
 			: false;
 		bool atSplitterPos =
 			isSplittable && qAbs(e->x() - splitPosition()) < TOLERANCE;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		if (!handleMouseEvent(index, e, e->pos()))
+#else
+		if (!handleMouseEvent(index, e, e->position().toPoint()))
+#endif
 		{
 			if (atSplitterPos)
 			{
@@ -605,7 +636,12 @@ void QtnPropertyView::mouseDoubleClickEvent(QMouseEvent *e)
 {
 	if (!m_rubberBand)
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		handleMouseEvent(visibleItemIndexByPoint(e->pos()), e, e->pos());
+#else
+		handleMouseEvent(visibleItemIndexByPoint(e->position().toPoint()), e,
+			e->position().toPoint());
+#endif
 		QAbstractScrollArea::mouseDoubleClickEvent(e);
 	}
 }
@@ -618,8 +654,7 @@ bool QtnPropertyView::viewportEvent(QEvent *e)
 			updateStyleStuff();
 			break;
 
-		case QEvent::ToolTip:
-		{
+		case QEvent::ToolTip: {
 			QHelpEvent *helpEvent = static_cast<QHelpEvent *>(e);
 			tooltipEvent(helpEvent);
 			break;
@@ -672,22 +707,19 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 
 	switch (e->key())
 	{
-		case Qt::Key_Home:
-		{
+		case Qt::Key_Home: {
 			// go to first item
 			changeActivePropertyByIndex(0);
 			break;
 		}
 
-		case Qt::Key_End:
-		{
+		case Qt::Key_End: {
 			// go to last item
 			changeActivePropertyByIndex(m_visibleItems.size() - 1);
 			break;
 		}
 
-		case Qt::Key_Up:
-		{
+		case Qt::Key_Up: {
 			// go to previous item
 			int index = visibleItemIndexByProperty(activeProperty());
 			if (index < 0)
@@ -697,8 +729,7 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 			break;
 		}
 
-		case Qt::Key_Down:
-		{
+		case Qt::Key_Down: {
 			// go to next item
 			int index = visibleItemIndexByProperty(activeProperty());
 			if (index < 0)
@@ -709,8 +740,7 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 			break;
 		}
 
-		case Qt::Key_PageUp:
-		{
+		case Qt::Key_PageUp: {
 			// go to previous page
 			int index = visibleItemIndexByProperty(activeProperty());
 			if (index < 0)
@@ -724,8 +754,7 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 			break;
 		}
 
-		case Qt::Key_PageDown:
-		{
+		case Qt::Key_PageDown: {
 			// go to next page
 			int index = visibleItemIndexByProperty(activeProperty());
 			if (index < 0)
@@ -740,8 +769,7 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 			break;
 		}
 
-		case Qt::Key_Left:
-		{
+		case Qt::Key_Left: {
 			// go to parent item or collapse
 			int index = visibleItemIndexByProperty(activeProperty());
 			if (index < 0)
@@ -762,8 +790,7 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 			break;
 		}
 
-		case Qt::Key_Right:
-		{
+		case Qt::Key_Right: {
 			// go to child item or expand
 			int index = visibleItemIndexByProperty(activeProperty());
 			if (index < 0)
@@ -786,8 +813,7 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 			break;
 		}
 
-		default:
-		{
+		default: {
 			int index = visibleItemIndexByProperty(activeProperty());
 
 			if (index >= 0)
@@ -809,8 +835,14 @@ void QtnPropertyView::keyPressEvent(QKeyEvent *e)
 
 void QtnPropertyView::wheelEvent(QWheelEvent *e)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	bool processed =
 		handleMouseEvent(visibleItemIndexByPoint(e->pos()), e, e->pos());
+#else
+	bool processed =
+		handleMouseEvent(visibleItemIndexByPoint(e->position().toPoint()), e,
+			e->position().toPoint());
+#endif
 	if (processed)
 		return;
 
@@ -819,7 +851,11 @@ void QtnPropertyView::wheelEvent(QWheelEvent *e)
 
 void QtnPropertyView::tooltipEvent(QHelpEvent *e)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (!handleMouseEvent(visibleItemIndexByPoint(e->pos()), e, e->pos()))
+#else
+	if (!handleMouseEvent(visibleItemIndexByPoint(e->pos()), e, e->pos()))
+#endif
 	{
 		QToolTip::hideText();
 	}

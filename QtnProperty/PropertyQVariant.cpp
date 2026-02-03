@@ -35,9 +35,17 @@ bool qtnCompareQVariants(const QVariant &left, const QVariant &right)
 		return false;
 	}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	switch (left.type())
+#else
+	switch (left.typeId())
+#endif
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Hash:
+#else
+		case QMetaType::QVariantHash:
+#endif
 		{
 			const auto leftMap = left.toHash();
 			const auto rightMap = right.toHash();
@@ -62,7 +70,11 @@ bool qtnCompareQVariants(const QVariant &left, const QVariant &right)
 			return true;
 		}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Map:
+#else
+		case QMetaType::QVariantMap:
+#endif
 		{
 			const auto leftMap = left.toMap();
 			const auto rightMap = right.toMap();
@@ -87,7 +99,11 @@ bool qtnCompareQVariants(const QVariant &left, const QVariant &right)
 			return true;
 		}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::List:
+#else
+		case QMetaType::QVariantList:
+#endif
 		{
 			const auto leftList = left.toList();
 			const auto rightList = left.toList();
@@ -196,17 +212,34 @@ QtnPropertyQVariant::QtnPropertyQVariant(QObject *parent)
 
 QString QtnPropertyQVariant::valueToString(const QVariant &value)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	return !variantIsObject(value.type()) ? value.toString() : QString();
+#else
+	return !variantIsObject(static_cast<QMetaType::Type>(value.typeId()))
+		? value.toString()
+		: QString();
+#endif
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 bool QtnPropertyQVariant::variantIsObject(QVariant::Type type)
+#else
+bool QtnPropertyQVariant::variantIsObject(QMetaType::Type type)
+#endif
 {
 	switch (type)
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Hash:
 		case QVariant::Map:
 		case QVariant::StringList:
 		case QVariant::List:
+#else
+		case QMetaType::QVariantHash:
+		case QMetaType::QVariantMap:
+		case QMetaType::QStringList:
+		case QMetaType::QVariantList:
+#endif
 			return true;
 
 		default:
@@ -216,16 +249,30 @@ bool QtnPropertyQVariant::variantIsObject(QVariant::Type type)
 	return false;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QString QtnPropertyQVariant::getPlaceholderStr(QVariant::Type type)
+#else
+QString QtnPropertyQVariant::getPlaceholderStr(QMetaType::Type type)
+#endif
 {
 	switch (type)
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Hash:
 		case QVariant::Map:
+#else
+		case QMetaType::QVariantHash:
+		case QMetaType::QVariantMap:
+#endif
 			return tr("(Dictionary)");
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::StringList:
 		case QVariant::List:
+#else
+		case QMetaType::QStringList:
+		case QMetaType::QVariantList:
+#endif
 			return tr("(List)");
 
 		default:
@@ -279,7 +326,14 @@ bool QtnPropertyDelegateQVariant::propertyValueToStrImpl(
 	strValue = QtnPropertyQVariant::valueToString(value);
 
 	if (strValue.isEmpty())
+	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		strValue = QtnPropertyQVariant::getPlaceholderStr(value.type());
+#else
+		strValue = QtnPropertyQVariant::getPlaceholderStr(
+			static_cast<QMetaType::Type>(value.typeId()));
+#endif
+	}
 
 	return true;
 }
@@ -334,7 +388,12 @@ void QtnPropertyQVariantEditBttnHandler::updateEditor()
 		QVariant value;
 		value = property().value();
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		if (QtnPropertyQVariant::variantIsObject(value.type()))
+#else
+		if (QtnPropertyQVariant::variantIsObject(
+				static_cast<QMetaType::Type>(value.typeId())))
+#endif
 		{
 			is_object = true;
 			edit->setText(QString());
@@ -344,8 +403,13 @@ void QtnPropertyQVariantEditBttnHandler::updateEditor()
 			edit->setText(value.toString());
 		}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		edit->setPlaceholderText(
 			QtnPropertyQVariant::getPlaceholderStr(value.type()));
+#else
+		edit->setPlaceholderText(QtnPropertyQVariant::getPlaceholderStr(
+			static_cast<QMetaType::Type>(value.typeId())));
+#endif
 		edit->selectAll();
 	}
 }

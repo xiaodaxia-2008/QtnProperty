@@ -2,7 +2,11 @@
 #include "ui_MainWindow.h"
 #include "mydialog.h"
 #include <QMessageBox>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QDesktopWidget>
+#else
+#include <QScreen>
+#endif
 #include <QInputDialog>
 
 #include "QtnProperty/QObjectPropertySet.h"
@@ -36,13 +40,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 	ui->pw->setPropertySet(ps);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	qtnScriptRegisterPropertyTypes(&jsEngine);
 	jsEngine.globalObject().setProperty("samplePS", jsEngine.newQObject(ps));
 
 	dbg.attachTo(&jsEngine);
+#endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	move(QApplication::desktop()->availableGeometry().center() -
 		rect().center());
+#else
+	move(screen()->availableGeometry().center() - rect().center());
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -75,8 +85,10 @@ void MainWindow::on_editButton_clicked()
 
 void MainWindow::on_dbgButton_clicked()
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QMainWindow *dbgWindow = dbg.standardWindow();
 	dbgWindow->show();
+#endif
 }
 
 void MainWindow::on_pushButton_clicked()

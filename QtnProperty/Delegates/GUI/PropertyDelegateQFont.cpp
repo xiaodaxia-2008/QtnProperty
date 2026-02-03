@@ -99,6 +99,7 @@ static void applyFontStyle(QFont &font)
 	if (!style.isEmpty())
 	{
 		auto family = font.family();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		QFontDatabase db;
 
 		for (const auto &s : db.styles(family))
@@ -110,6 +111,17 @@ static void applyFontStyle(QFont &font)
 				return;
 			}
 		}
+#else
+		for (const auto &s : QFontDatabase::styles(family))
+		{
+			if (s == style)
+			{
+				font.setBold(QFontDatabase::bold(family, style));
+				font.setItalic(QFontDatabase::italic(family, style));
+				return;
+			}
+		}
+#endif
 	}
 
 #else
@@ -130,31 +142,41 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getFamilyDescription(owner.name()));
 	propertyFamily->setCallbackValueGet(
 		[&owner]() -> QString { return owner.value().family(); });
-	propertyFamily->setCallbackValueSet([&owner, propertyStyle](QString value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
-		font.setFamily(value);
-		applyFontStyle(font);
-		owner.setValue(font, reason);
+	propertyFamily->setCallbackValueSet(
+		[&owner, propertyStyle](QString value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
+			font.setFamily(value);
+			applyFontStyle(font);
+			owner.setValue(font, reason);
 
 #ifdef Q_OS_MAC
-		QtnPropertyDelegateInfo delegate;
-		delegate.name = qtnComboBoxDelegate();
-		QFontDatabase fDB;
-		delegate.attributes[qtnItemsAttr()] =
-			QStringList(QString()) + fDB.styles(value);
-		delegate.attributes[qtnEditableAttr()] = true;
-		propertyStyle->setDelegateInfo(delegate);
-
-		owner.postUpdateEvent(QtnPropertyChangeReasonChildren);
+			QtnPropertyDelegateInfo delegate;
+			delegate.name = qtnComboBoxDelegate();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+			QFontDatabase fDB;
+			delegate.attributes[qtnItemsAttr()] =
+				QStringList(QString()) + fDB.styles(value);
 #else
-		Q_UNUSED(propertyStyle);
+			delegate.attributes[qtnItemsAttr()] =
+				QStringList(QString()) + QFontDatabase::styles(value);
 #endif
-	});
+			delegate.attributes[qtnEditableAttr()] = true;
+			propertyStyle->setDelegateInfo(delegate);
+
+			owner.postUpdateEvent(QtnPropertyChangeReasonChildren);
+#else
+			Q_UNUSED(propertyStyle);
+#endif
+		});
 
 	QtnPropertyDelegateInfo delegate;
 	delegate.name = qtnComboBoxDelegate();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QFontDatabase fDB;
 	delegate.attributes[qtnItemsAttr()] = fDB.families();
+#else
+	delegate.attributes[qtnItemsAttr()] = QFontDatabase::families();
+#endif
 	propertyFamily->setDelegateInfo(delegate);
 
 	propertyStyle->setName(QStringLiteral("style"));
@@ -163,17 +185,23 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getStyleDescription(owner.name()));
 	propertyStyle->setCallbackValueGet(
 		[&owner]() -> QString { return owner.value().styleName(); });
-	propertyStyle->setCallbackValueSet([&owner](QString value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
-		font.setStyleName(value);
-		applyFontStyle(font);
-		owner.setValue(font, reason);
-	});
+	propertyStyle->setCallbackValueSet(
+		[&owner](QString value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
+			font.setStyleName(value);
+			applyFontStyle(font);
+			owner.setValue(font, reason);
+		});
 
 #ifdef Q_OS_MAC
 	delegate.name = qtnComboBoxDelegate();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	delegate.attributes[qtnItemsAttr()] =
 		QStringList(QString()) + fDB.styles(owner.value().family());
+#else
+	delegate.attributes[qtnItemsAttr()] =
+		QStringList(QString()) + QFontDatabase::styles(owner.value().family());
+#endif
 	delegate.attributes[qtnEditableAttr()] = true;
 #else
 	delegate.name = qtnLineEditDelegate();
@@ -203,24 +231,25 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 
 		return ps;
 	});
-	propertySize->setCallbackValueSet([&owner](qint32 value, QtnPropertyChangeReason reason) {
-		if (value <= 0)
-			value = 1;
-		else if (value > 256)
-			value = 256;
+	propertySize->setCallbackValueSet(
+		[&owner](qint32 value, QtnPropertyChangeReason reason) {
+			if (value <= 0)
+				value = 1;
+			else if (value > 256)
+				value = 256;
 
-		QFont font = owner.value();
+			QFont font = owner.value();
 
-		if (font.pointSize() > 0)
-		{
-			font.setPointSize(value);
-		} else
-		{
-			font.setPixelSize(value);
-		}
+			if (font.pointSize() > 0)
+			{
+				font.setPointSize(value);
+			} else
+			{
+				font.setPixelSize(value);
+			}
 
-		owner.setValue(font, reason);
-	});
+			owner.setValue(font, reason);
+		});
 
 	propertySize->setMinValue(1);
 	propertySize->setMaxValue(256);
@@ -239,33 +268,34 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		return SizeUnitPoint;
 	});
 
-	propertySizeUnit->setCallbackValueSet([&owner](QtnEnumValueType value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
+	propertySizeUnit->setCallbackValueSet(
+		[&owner](QtnEnumValueType value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
 
-		int size = std::max(font.pointSize(), font.pixelSize());
+			int size = std::max(font.pointSize(), font.pixelSize());
 
-		if (size <= 0)
-			size = 1;
+			if (size <= 0)
+				size = 1;
 
-		if (size > 256)
-			size = 256;
+			if (size > 256)
+				size = 256;
 
-		switch (value)
-		{
-			case SizeUnitPixel:
-				font.setPixelSize(size);
-				break;
+			switch (value)
+			{
+				case SizeUnitPixel:
+					font.setPixelSize(size);
+					break;
 
-			case SizeUnitPoint:
-				font.setPointSize(size);
-				break;
+				case SizeUnitPoint:
+					font.setPointSize(size);
+					break;
 
-			default:
-				break;
-		}
+				default:
+					break;
+			}
 
-		owner.setValue(font, reason);
-	});
+			owner.setValue(font, reason);
+		});
 
 	QtnPropertyBoolCallback *propertyBold = new QtnPropertyBoolCallback;
 	addSubProperty(propertyBold);
@@ -275,36 +305,50 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getBoldDescription(owner.name()));
 	propertyBold->setCallbackValueGet(
 		[&owner]() -> bool { return owner.value().bold(); });
-	propertyBold->setCallbackValueSet([&owner](bool value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
+	propertyBold->setCallbackValueSet(
+		[&owner](bool value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
 
-		if (font.bold() != value)
-		{
-#ifdef Q_OS_MAC
-			auto style = font.styleName();
-
-			if (!style.isEmpty())
+			if (font.bold() != value)
 			{
-				auto family = font.family();
-				QFontDatabase db;
+#ifdef Q_OS_MAC
+				auto style = font.styleName();
 
-				for (auto &s : db.styles(family))
+				if (!style.isEmpty())
 				{
-					if (s == style)
-					{
-						if (value != db.bold(family, style))
-							return;
+					auto family = font.family();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+					QFontDatabase db;
 
-						break;
+					for (auto &s : db.styles(family))
+					{
+						if (s == style)
+						{
+							if (value != db.bold(family, style))
+								return;
+
+							break;
+						}
 					}
+#else
+					for (auto &s : QFontDatabase::styles(family))
+					{
+						if (s == style)
+						{
+							if (value != QFontDatabase::bold(family, style))
+								return;
+
+							break;
+						}
+					}
+#endif
 				}
-			}
 
 #endif
-			font.setBold(value);
-			owner.setValue(font, reason);
-		}
-	});
+				font.setBold(value);
+				owner.setValue(font, reason);
+			}
+		});
 
 	QtnPropertyBoolCallback *propertyItalic = new QtnPropertyBoolCallback;
 	addSubProperty(propertyItalic);
@@ -314,36 +358,50 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getItalicDescription(owner.name()));
 	propertyItalic->setCallbackValueGet(
 		[&owner]() -> bool { return owner.value().italic(); });
-	propertyItalic->setCallbackValueSet([&owner](bool value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
+	propertyItalic->setCallbackValueSet(
+		[&owner](bool value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
 
-		if (font.italic() != value)
-		{
-#ifdef Q_OS_MAC
-			auto style = font.styleName();
-
-			if (!style.isEmpty())
+			if (font.italic() != value)
 			{
-				auto family = font.family();
-				QFontDatabase db;
+#ifdef Q_OS_MAC
+				auto style = font.styleName();
 
-				for (auto &s : db.styles(family))
+				if (!style.isEmpty())
 				{
-					if (s == style)
-					{
-						if (value != db.italic(family, style))
-							return;
+					auto family = font.family();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+					QFontDatabase db;
 
-						break;
+					for (auto &s : db.styles(family))
+					{
+						if (s == style)
+						{
+							if (value != db.italic(family, style))
+								return;
+
+							break;
+						}
 					}
+#else
+					for (auto &s : QFontDatabase::styles(family))
+					{
+						if (s == style)
+						{
+							if (value != QFontDatabase::italic(family, style))
+								return;
+
+							break;
+						}
+					}
+#endif
 				}
-			}
 
 #endif
-			font.setItalic(value);
-			owner.setValue(font, reason);
-		}
-	});
+				font.setItalic(value);
+				owner.setValue(font, reason);
+			}
+		});
 
 	QtnPropertyBoolCallback *propertyUnderline = new QtnPropertyBoolCallback;
 	addSubProperty(propertyUnderline);
@@ -353,11 +411,12 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getUnderlineDescription(owner.name()));
 	propertyUnderline->setCallbackValueGet(
 		[&owner]() -> bool { return owner.value().underline(); });
-	propertyUnderline->setCallbackValueSet([&owner](bool value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
-		font.setUnderline(value);
-		owner.setValue(font, reason);
-	});
+	propertyUnderline->setCallbackValueSet(
+		[&owner](bool value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
+			font.setUnderline(value);
+			owner.setValue(font, reason);
+		});
 
 	QtnPropertyBoolCallback *propertyStrikeout = new QtnPropertyBoolCallback;
 	addSubProperty(propertyStrikeout);
@@ -367,11 +426,12 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getStrikeoutDescription(owner.name()));
 	propertyStrikeout->setCallbackValueGet(
 		[&owner]() -> bool { return owner.value().strikeOut(); });
-	propertyStrikeout->setCallbackValueSet([&owner](bool value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
-		font.setStrikeOut(value);
-		owner.setValue(font, reason);
-	});
+	propertyStrikeout->setCallbackValueSet(
+		[&owner](bool value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
+			font.setStrikeOut(value);
+			owner.setValue(font, reason);
+		});
 
 	QtnPropertyBoolCallback *propertyKerning = new QtnPropertyBoolCallback;
 	addSubProperty(propertyKerning);
@@ -381,11 +441,12 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 		QtnPropertyQFont::getKerningDescription(owner.name()));
 	propertyKerning->setCallbackValueGet(
 		[&owner]() -> bool { return owner.value().kerning(); });
-	propertyKerning->setCallbackValueSet([&owner](bool value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
-		font.setKerning(value);
-		owner.setValue(font, reason);
-	});
+	propertyKerning->setCallbackValueSet(
+		[&owner](bool value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
+			font.setKerning(value);
+			owner.setValue(font, reason);
+		});
 
 	auto propertyAntialiasing = new QtnPropertyEnumCallback(nullptr);
 	addSubProperty(propertyAntialiasing);
@@ -398,11 +459,12 @@ QtnPropertyDelegateQFont::QtnPropertyDelegateQFont(QtnPropertyQFontBase &owner)
 	propertyAntialiasing->setCallbackValueGet([&owner]() -> QtnEnumValueType {
 		return owner.value().styleStrategy();
 	});
-	propertyAntialiasing->setCallbackValueSet([&owner](QtnEnumValueType value, QtnPropertyChangeReason reason) {
-		QFont font = owner.value();
-		font.setStyleStrategy(static_cast<QFont::StyleStrategy>(value));
-		owner.setValue(font, reason);
-	});
+	propertyAntialiasing->setCallbackValueSet(
+		[&owner](QtnEnumValueType value, QtnPropertyChangeReason reason) {
+			QFont font = owner.value();
+			font.setStyleStrategy(static_cast<QFont::StyleStrategy>(value));
+			owner.setValue(font, reason);
+		});
 }
 
 void QtnPropertyDelegateQFont::Register(QtnPropertyDelegateFactory &factory)

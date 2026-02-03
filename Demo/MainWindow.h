@@ -2,8 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QScriptEngine>
 #include <QScriptEngineDebugger>
+#endif
 
 #include "QtnProperty/Property.h"
 
@@ -39,8 +41,10 @@ private:
 
 	Ui::MainWindow *ui;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QScriptEngineDebugger dbg;
 	QScriptEngine jsEngine;
+#endif
 
 	QStringList m_candidates;
 };

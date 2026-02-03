@@ -24,9 +24,12 @@ limitations under the License.
 
 #include <limits>
 #include <functional>
+#include <type_traits>
 
 template <typename T>
-struct PropertyValueTag {};
+struct PropertyValueTag
+{
+};
 
 template <typename T, typename EqPred = std::equal_to<T>>
 class QtnSinglePropertyBase : public QtnProperty
@@ -169,15 +172,27 @@ protected:
 	virtual bool fromVariantImpl(
 		const QVariant &var, QtnPropertyChangeReason reason) override
 	{
-		if (var.canConvert<ValueTypeStore>())
-			return setValue(var.value<ValueTypeStore>(), reason);
+		if constexpr (std::is_same_v<ValueTypeStore, QVariant>)
+		{
+			return setValue(var, reason);
+		} else
+		{
+			if (var.canConvert<ValueTypeStore>())
+				return setValue(var.value<ValueTypeStore>(), reason);
+		}
 
 		return QtnProperty::fromVariantImpl(var, reason);
 	}
 
 	virtual bool toVariantImpl(QVariant &var) const override
 	{
-		var.setValue<ValueTypeStore>(value());
+		if constexpr (std::is_same_v<ValueTypeStore, QVariant>)
+		{
+			var = value();
+		} else
+		{
+			var.setValue<ValueTypeStore>(value());
+		}
 		return var.isValid();
 	}
 
@@ -207,15 +222,18 @@ private:
 	}
 };
 */
-template <typename QtnSinglePropertyBaseType, typename ActualValueType, typename EqPred = std::equal_to<ActualValueType>>
+template <typename QtnSinglePropertyBaseType, typename ActualValueType,
+	typename EqPred = std::equal_to<ActualValueType>>
 class QtnSinglePropertyBaseAs : public QtnSinglePropertyBaseType
 {
 public:
-	using ThisPropertyType = QtnSinglePropertyBaseAs<QtnSinglePropertyBaseType, ActualValueType, EqPred>;
+	using ThisPropertyType = QtnSinglePropertyBaseAs<QtnSinglePropertyBaseType,
+		ActualValueType, EqPred>;
 	using BasePropertyType = QtnSinglePropertyBaseType;
 
 	using BaseValueType = typename QtnSinglePropertyBaseType::ValueType;
-	using BaseValueTypeStore = typename QtnSinglePropertyBaseType::ValueTypeStore;
+	using BaseValueTypeStore =
+		typename QtnSinglePropertyBaseType::ValueTypeStore;
 	using BaseValueTag = typename QtnSinglePropertyBaseType::ValueTag;
 
 	using ValueType = ActualValueType;
@@ -260,11 +278,14 @@ protected:
 	{
 	}
 
-	virtual bool fromActualValue(ValueType actualValue, BaseValueTypeStore& baseValue) const = 0;
-	virtual bool toActualValue(ValueTypeStore& actualValue, BaseValueType baseValue) const = 0;
+	virtual bool fromActualValue(
+		ValueType actualValue, BaseValueTypeStore &baseValue) const = 0;
+	virtual bool toActualValue(
+		ValueTypeStore &actualValue, BaseValueType baseValue) const = 0;
 
 	virtual ValueType valueImpl(ValueTag) const = 0;
-	virtual void setValueImpl(ValueType newValue, QtnPropertyChangeReason reason) = 0;
+	virtual void setValueImpl(
+		ValueType newValue, QtnPropertyChangeReason reason) = 0;
 
 	virtual bool isValueAcceptedImpl(ValueType)
 	{
@@ -362,7 +383,8 @@ public:
 	using ValueTag = typename QtnSinglePropertyType::ValueTag;
 
 	using CallbackValueGet = std::function<ValueTypeStore()>;
-	using CallbackValueSet = std::function<void(ValueType, QtnPropertyChangeReason)>;
+	using CallbackValueSet =
+		std::function<void(ValueType, QtnPropertyChangeReason)>;
 	using CallbackValueAccepted = std::function<bool(ValueType)>;
 	using CallbackValueEqual = std::function<bool(ValueType)>;
 

@@ -69,8 +69,13 @@ public:
 	explicit QtnPropertyQVariant(QObject *parent);
 
 	static QString valueToString(const QVariant &value);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	static bool variantIsObject(QVariant::Type type);
 	static QString getPlaceholderStr(QVariant::Type type);
+#else
+	static bool variantIsObject(QMetaType::Type type);
+	static QString getPlaceholderStr(QMetaType::Type type);
+#endif
 };
 
 class QTN_IMPORT_EXPORT QtnPropertyDelegateQVariant

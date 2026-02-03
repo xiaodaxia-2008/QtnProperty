@@ -150,7 +150,11 @@ void QtnPropertyDelegateSlideBox::draw(
 	auto colorGroup = stateProperty()->isEditableByUser() ? QPalette::Active
 														  : QPalette::Disabled;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	painter.fillRect(boxRect, palette.color(colorGroup, QPalette::Background));
+#else
+	painter.fillRect(boxRect, palette.color(colorGroup, QPalette::Window));
+#endif
 	painter.fillRect(valueRect, m_boxFillColor);
 
 	painter.setPen(context.textColorFor(stateProperty()->isEditableByUser()));
@@ -169,8 +173,7 @@ bool QtnPropertyDelegateSlideBox::event(
 {
 	switch (context.eventType())
 	{
-		case QEvent::KeyPress:
-		{
+		case QEvent::KeyPress: {
 			int key = context.eventAs<QKeyEvent>()->key();
 
 			int increment = 0;
@@ -189,8 +192,7 @@ bool QtnPropertyDelegateSlideBox::event(
 			return true;
 		}
 
-		case QEvent::Wheel:
-		{
+		case QEvent::Wheel: {
 			if (m_updateByScroll)
 			{
 				int steps =
@@ -205,14 +207,12 @@ bool QtnPropertyDelegateSlideBox::event(
 			return false;
 		}
 
-		case QtnSubItemEvent::Activated:
-		{
+		case QtnSubItemEvent::Activated: {
 			m_oldCursor = context.widget->cursor();
 			return true;
 		}
 
-		case QtnSubItemEvent::PressMouse:
-		{
+		case QtnSubItemEvent::PressMouse: {
 			if (!m_animate)
 			{
 				m_dragValuePart = toDragValuePart(
@@ -222,12 +222,16 @@ bool QtnPropertyDelegateSlideBox::event(
 			return true;
 		}
 
-		case QEvent::MouseMove:
-		{
+		case QEvent::MouseMove: {
 			if (item.state() == QtnSubItemStatePushed)
 			{
 				auto dragValuePart = toDragValuePart(
-					context.eventAs<QMouseEvent>()->x(), item.rect);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+					context.eventAs<QMouseEvent>()->x(),
+#else
+					context.eventAs<QMouseEvent>()->position().x(),
+#endif
+					item.rect);
 				if (m_liveUpdate)
 				{
 					if (m_animate)
@@ -248,8 +252,7 @@ bool QtnPropertyDelegateSlideBox::event(
 			break;
 		}
 
-		case QtnSubItemEvent::ReleaseMouse:
-		{
+		case QtnSubItemEvent::ReleaseMouse: {
 			context.widget->setCursor(m_oldCursor);
 			auto dragValuePart = toDragValuePart(
 				context.eventAs<QtnSubItemEvent>()->x(), item.rect);

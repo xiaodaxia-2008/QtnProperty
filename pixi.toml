@@ -1,0 +1,14 @@
+[workspace]
+authors = ["xiaodaxia <xiaozisheng2008@hotmail.com>"]
+channels = ["conda-forge"]
+name = "QtnProperty"
+platforms = ["win-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+qt6-main = ">=6.10.2,<7"
+
+[target.win-64.dependencies]
+vs2022_win-64 = "*"

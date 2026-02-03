@@ -16,6 +16,7 @@ limitations under the License.
 *******************************************************************************/
 
 #include "PropertyQPoint.h"
+#include <QRegularExpression>
 
 QtnPropertyQPointBase::QtnPropertyQPointBase(QObject *parent)
 	: ParentClass(parent)
@@ -39,35 +40,31 @@ QtnProperty *QtnPropertyQPointBase::createYProperty()
 bool QtnPropertyQPointBase::fromStrImpl(
 	const QString &str, QtnPropertyChangeReason reason)
 {
-	static QRegExp parserPoint(
-		"^\\s*QPoint\\s*\\(([^\\)]+)\\)\\s*$", Qt::CaseInsensitive);
+	static QRegularExpression parserPoint(
+		QStringLiteral("^\\s*QPoint\\s*\\(([^\\)]+)\\)\\s*$"),
+		QRegularExpression::CaseInsensitiveOption);
+	auto matchPoint = parserPoint.match(str);
 
-	if (!parserPoint.exactMatch(str))
+	if (!matchPoint.hasMatch())
 		return false;
 
-	QStringList params = parserPoint.capturedTexts();
+	QString paramStr = matchPoint.captured(1);
 
-	if (params.size() != 2)
-		return false;
+	static QRegularExpression parserParams(
+		QStringLiteral("^\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*$"),
+		QRegularExpression::CaseInsensitiveOption);
+	auto matchParams = parserParams.match(paramStr);
 
-	static QRegExp parserParams(
-		"^\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*$", Qt::CaseInsensitive);
-
-	if (!parserParams.exactMatch(params[1]))
-		return false;
-
-	params = parserParams.capturedTexts();
-
-	if (params.size() != 3)
+	if (!matchParams.hasMatch())
 		return false;
 
 	bool ok = false;
-	int x = params[1].toInt(&ok);
+	int x = matchParams.captured(1).toInt(&ok);
 
 	if (!ok)
 		return false;
 
-	int y = params[2].toInt(&ok);
+	int y = matchParams.captured(2).toInt(&ok);
 
 	if (!ok)
 		return false;

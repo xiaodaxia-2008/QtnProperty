@@ -36,7 +36,9 @@ private Q_SLOTS:
 	void createCopy();
 	void copyValues();
 	void propertyAssignment();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	void propertyScripting();
+#endif
 	void variantConversions();
 	void stringConversions();
 	void qObjectProperty();

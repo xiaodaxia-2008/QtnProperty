@@ -16,6 +16,7 @@ limitations under the License.
 *******************************************************************************/
 
 #include "PropertyQRectF.h"
+#include <QRegularExpression>
 
 #include "PropertyQRect.h"
 #include "PropertyQSize.h"
@@ -73,41 +74,37 @@ QtnPropertyQRectFBase::QtnPropertyQRectFBase(QObject *parent)
 bool QtnPropertyQRectFBase::fromStrImpl(
 	const QString &str, QtnPropertyChangeReason reason)
 {
-	static QRegExp parserRect(
-		"^\\s*QRectF\\s*\\(([^\\)]+)\\)\\s*$", Qt::CaseInsensitive);
-	static QRegExp parserParams("^\\s*(\\-?\\d+(\\.\\d{0,})?)\\s*,\\s*(\\-?\\d+"
-								"(\\.\\d{0,})?)\\s*,\\s*(\\d+(\\.\\d{0,})?)\\s*"
-								",\\s*(\\d+(\\.\\d{0,})?)\\s*$",
-		Qt::CaseInsensitive);
+	static QRegularExpression parserRect(
+		QStringLiteral("^\\s*QRectF\\s*\\(([^\\)]+)\\)\\s*$"),
+		QRegularExpression::CaseInsensitiveOption);
+	static QRegularExpression parserParams(
+		QStringLiteral("^\\s*(-?\\d+(\\.\\d*)?)\\s*,\\s*(-?\\d+(\\.\\d*)?)\\s*,"
+					   "\\s*(\\d+(\\.\\d*)?)\\s*,\\s*(\\d+(\\.\\d*)?)\\s*$"),
+		QRegularExpression::CaseInsensitiveOption);
 
-	if (!parserRect.exactMatch(str))
+	auto matchRect = parserRect.match(str);
+	if (!matchRect.hasMatch())
 		return false;
 
-	QStringList params = parserRect.capturedTexts();
-	if (params.size() != 2)
-		return false;
-
-	if (!parserParams.exactMatch(params[1]))
-		return false;
-
-	params = parserParams.capturedTexts();
-	if (params.size() != 9)
+	QString paramStr = matchRect.captured(1);
+	auto matchParams = parserParams.match(paramStr);
+	if (!matchParams.hasMatch())
 		return false;
 
 	bool ok = false;
-	double left = params[1].toDouble(&ok);
+	double left = matchParams.captured(1).toDouble(&ok);
 	if (!ok)
 		return false;
 
-	double top = params[3].toDouble(&ok);
+	double top = matchParams.captured(3).toDouble(&ok);
 	if (!ok)
 		return false;
 
-	double width = params[5].toDouble(&ok);
+	double width = matchParams.captured(5).toDouble(&ok);
 	if (!ok)
 		return false;
 
-	double height = params[7].toDouble(&ok);
+	double height = matchParams.captured(7).toDouble(&ok);
 	if (!ok)
 		return false;
 

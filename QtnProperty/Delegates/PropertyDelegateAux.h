@@ -236,7 +236,11 @@ template <typename T,
 	typename std::enable_if<std::is_integral<T>::value>::type * = nullptr>
 void fixMinMaxVariant(QVariant &minv, QVariant &maxv)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (minv.type() == QVariant::ULongLong)
+#else
+	if (minv.userType() == QMetaType::ULongLong)
+#endif
 	{
 		quint64 min = minv.toULongLong();
 		if (min > quint64(std::numeric_limits<T>::max()))
@@ -260,7 +264,11 @@ void fixMinMaxVariant(QVariant &minv, QVariant &maxv)
 		}
 	}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (maxv.type() == QVariant::ULongLong)
+#else
+	if (maxv.userType() == QMetaType::ULongLong)
+#endif
 	{
 		quint64 max = maxv.toULongLong();
 		if (max > quint64(std::numeric_limits<T>::max()))
@@ -284,7 +292,11 @@ void fixMinMaxVariant(QVariant &minv, QVariant &maxv)
 		}
 	}
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	if (minv.isValid() && maxv.isValid() && maxv < minv)
+#else
+	if (minv.isValid() && maxv.isValid() && maxv.value<T>() < minv.value<T>())
+#endif
 	{
 		minv = QVariant();
 		maxv = QVariant();

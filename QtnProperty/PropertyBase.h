@@ -24,7 +24,10 @@ limitations under the License.
 #include <QVariant>
 #include <functional>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 class QScriptEngine;
+#endif
+
 class QtnPropertySet;
 class QtnProperty;
 class QtnPropertyConnector;
@@ -274,7 +277,9 @@ QTN_IMPORT_EXPORT QDataStream &operator<<(
 QTN_IMPORT_EXPORT QDataStream &operator>>(
 	QDataStream &stream, QtnPropertyBase &property);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTN_IMPORT_EXPORT void qtnScriptRegisterPropertyTypes(QScriptEngine *engine);
+#endif
 
 Q_DECLARE_METATYPE(const QtnPropertyBase *)
 Q_DECLARE_METATYPE(QtnPropertyBase *)

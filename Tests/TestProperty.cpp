@@ -2,7 +2,9 @@
 #include "QtnProperty/QObjectPropertySet.h"
 #include "PEG/test.peg.h"
 #include <QtTest/QtTest>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtScript/QScriptEngine>
+#endif
 
 static bool ret_true()
 {
@@ -828,6 +830,7 @@ void TestProperty::propertyAssignment()
 	}
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void TestProperty::propertyScripting()
 {
 	{
@@ -934,6 +937,7 @@ void TestProperty::propertyScripting()
 		QCOMPARE(val.toBool(), true);
 	}
 }
+#endif
 
 void TestProperty::variantConversions()
 {
@@ -1566,10 +1570,10 @@ void TestProperty::stringConversions()
 		QCOMPARE(pp.efp.value(), (QtnEnumFlagsValueType) MASK::TWO);
 		QVERIFY(pp.efp.fromStr("Two | Four"));
 		QCOMPARE(
-			pp.efp.value(), (QtnEnumFlagsValueType)(MASK::TWO | MASK::FOUR));
+			pp.efp.value(), (QtnEnumFlagsValueType) (MASK::TWO | MASK::FOUR));
 		QVERIFY(!pp.efp.fromStr("Two&Four"));
 		QCOMPARE(
-			pp.efp.value(), (QtnEnumFlagsValueType)(MASK::TWO | MASK::FOUR));
+			pp.efp.value(), (QtnEnumFlagsValueType) (MASK::TWO | MASK::FOUR));
 
 		QVERIFY(pp.efpc.toStr(str));
 		QCOMPARE(str, QString("ONE|FOUR"));

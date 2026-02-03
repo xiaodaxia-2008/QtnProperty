@@ -26,8 +26,7 @@ void QtnCompleterItemDelegate::paint(QPainter *painter,
 	{
 		case Qt::MatchStartsWith:
 		case Qt::MatchContains:
-		case Qt::MatchEndsWith:
-		{
+		case Qt::MatchEndsWith: {
 			auto subString = completer->completionPrefix();
 			auto currentStr = index.data().toString();
 			QFontMetrics fm(updatedOption.font);
@@ -55,22 +54,38 @@ void QtnCompleterItemDelegate::paint(QPainter *painter,
 					if (currentStr.startsWith(
 							subString, completer->caseSensitivity()))
 					{
-						highlightRect.setWidth(fm.width(QString::fromRawData(
-							currentStr.constData(), subString.length())));
+						highlightRect.setWidth(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+							fm.width(
+#else
+							fm.horizontalAdvance(
+#endif
+								QString::fromRawData(currentStr.constData(),
+									subString.length())));
 						contains = true;
 					}
 					break;
-				case Qt::MatchContains:
-				{
+				case Qt::MatchContains: {
 					int i = currentStr.indexOf(
 						subString, 0, completer->caseSensitivity());
 					if (i >= 0)
 					{
 						highlightRect.setLeft(highlightRect.left() +
-							fm.width(QString::fromRawData(
-								currentStr.constData(), i)));
-						highlightRect.setWidth(fm.width(QString::fromRawData(
-							&currentStr.constData()[i], subString.length())));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+							fm.width(
+#else
+							fm.horizontalAdvance(
+#endif
+								QString::fromRawData(
+									currentStr.constData(), i)));
+						highlightRect.setWidth(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+							fm.width(
+#else
+							fm.horizontalAdvance(
+#endif
+								QString::fromRawData(&currentStr.constData()[i],
+									subString.length())));
 						contains = true;
 					}
 					break;
@@ -80,7 +95,11 @@ void QtnCompleterItemDelegate::paint(QPainter *painter,
 							subString, completer->caseSensitivity()))
 					{
 						highlightRect.setLeft(highlightRect.left() +
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 							fm.width(
+#else
+							fm.horizontalAdvance(
+#endif
 								QString::fromRawData(currentStr.constData(),
 									currentStr.length() - subString.length())));
 						contains = true;

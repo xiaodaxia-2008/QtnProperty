@@ -20,8 +20,13 @@ limitations under the License.
 #include "PropertySet.h"
 #include "PropertyConnector.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QScriptEngine>
+#endif
 #include <QCoreApplication>
+#include <QIODevice>
+#include <QString>
+#include <QVariant>
 
 const qint32 QtnPropertyIDInvalid = -1;
 static quint16 qtnPropertyMagicNumber = 0x1984;
@@ -65,6 +70,7 @@ private:
 	QScopedPointer<QtnPropertyDelegateInfo> m_delegateInfo;
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 static QScriptValue qtnPropertyChangeReasonToScriptValue(
 	QScriptEngine *engine, const QtnPropertyChangeReason &val)
 {
@@ -171,6 +177,7 @@ void qtnScriptRegisterPropertyTypes(QScriptEngine *engine)
 		QtnPropertyChangeReasonChildren,
 		QScriptValue::ReadOnly | QScriptValue::Undeletable);
 }
+#endif
 
 extern bool qtnPropertyRegister();
 
@@ -667,7 +674,7 @@ bool QtnPropertyBase::toVariantImpl(QVariant &var) const
 	if (!toStr(str))
 		return false;
 
-	var.setValue<QString>(str);
+	var = str;
 	return true;
 }
 

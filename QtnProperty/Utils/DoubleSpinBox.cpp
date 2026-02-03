@@ -26,11 +26,15 @@ QString QtnDoubleSpinBox::textFromValue(double val) const
 	return valueToText(val, locale(), decimals(), isGroupSeparatorShown());
 }
 
-QValidator::State QtnDoubleSpinBox::validate(QString& text, int& pos) const
+QValidator::State QtnDoubleSpinBox::validate(QString &text, int &pos) const
 {
-	for (auto& chr : text)
+	for (auto &chr : text)
 		if (chr == QLatin1Char('.') || chr == QLatin1Char(','))
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 			chr = locale().decimalPoint();
+#else
+			chr = locale().decimalPoint().at(0);
+#endif
 	return QDoubleSpinBox::validate(text, pos);
 }
 
@@ -61,8 +65,13 @@ QString QtnDoubleSpinBox::valueToText(
 	}
 
 	auto result = locale.toString(value, 'f', decimals);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	auto decimalPoint = locale.decimalPoint();
 	auto groupSeparator = locale.groupSeparator();
+#else
+	auto decimalPoint = locale.decimalPoint().at(0);
+	auto groupSeparator = locale.groupSeparator().at(0);
+#endif
 	if (!groupSeparatorShown)
 		result.remove(groupSeparator);
 

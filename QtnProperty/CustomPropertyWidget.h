@@ -86,7 +86,11 @@ private:
 		QtnPropertyBase *destination, QtnCustomPropertyData &customData);
 
 	QVariant *dataPtr;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QVariant::Type lastAddType;
+#else
+	QMetaType::Type lastAddType;
+#endif
 	bool readOnly : 1;
 	bool autoUpdate : 1;
 	bool backupAutoUpdate : 1;

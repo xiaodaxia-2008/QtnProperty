@@ -11,3 +11,7 @@ build*/
 *Thumbs.db
 *.qm
 *.orig
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+.cache/

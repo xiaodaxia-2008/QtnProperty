@@ -197,26 +197,42 @@ bool QtnCompleterLineEdit::Completer::eventFilter(
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
 			case QEvent::MouseButtonDblClick:
-			case QEvent::MouseMove:
-			{
+			case QEvent::MouseMove: {
 				auto me = static_cast<QMouseEvent *>(event);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 				auto localPos = mLineEdit->mapFromGlobal(me->globalPos());
+#else
+				auto localPos =
+					mLineEdit->mapFromGlobal(me->globalPosition().toPoint());
+#endif
 				if (mLineEdit->rect().contains(localPos))
 				{
 					shouldComplete = !mListView->isVisible();
 					disableHide = true;
 					if (watched != mLineEdit)
 					{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 						me->setLocalPos(localPos);
 						mLineEdit->event(event);
+#else
+						QMouseEvent newEvent(me->type(), localPos,
+							me->globalPosition(), me->button(), me->buttons(),
+							me->modifiers());
+						mLineEdit->event(&newEvent);
+#endif
 					}
 					break;
 				}
 				if (watched != mLineEdit)
 				{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+					auto globalPos = me->globalPos();
+#else
+					auto globalPos = me->globalPosition().toPoint();
+#endif
 					bool outside = !mListView->isVisible() ||
-						!mListView->rect().contains(mListView->mapFromGlobal(
-							static_cast<QMouseEvent *>(event)->globalPos()));
+						!mListView->rect().contains(
+							mListView->mapFromGlobal(globalPos));
 
 					if ((event->type() == QEvent::MouseButtonRelease &&
 							!outside) ||
@@ -229,8 +245,7 @@ bool QtnCompleterLineEdit::Completer::eventFilter(
 				break;
 			}
 
-			case QEvent::KeyPress:
-			{
+			case QEvent::KeyPress: {
 				auto ke = static_cast<QKeyEvent *>(event);
 				switch (ke->key())
 				{
@@ -254,8 +269,7 @@ bool QtnCompleterLineEdit::Completer::eventFilter(
 						break;
 
 					case Qt::Key_Enter:
-					case Qt::Key_Return:
-					{
+					case Qt::Key_Return: {
 						setCompletionPrefix(mLineEdit->text());
 						acceptEvent = true;
 						disableHide = true;
@@ -271,8 +285,7 @@ bool QtnCompleterLineEdit::Completer::eventFilter(
 							break;
 						}
 						// fallthrough
-					default:
-					{
+					default: {
 						acceptEvent = true;
 						disableHide = true;
 						shouldComplete = true;

@@ -108,16 +108,14 @@ void BasePropertyDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
 	switch (GetButtonBox()->buttonRole(button))
 	{
-		case QDialogButtonBox::AcceptRole:
-		{
+		case QDialogButtonBox::AcceptRole: {
 			if (ValidateInput())
 				accept();
 
 			break;
 		}
 
-		case QDialogButtonBox::RejectRole:
-		{
+		case QDialogButtonBox::RejectRole: {
 			reject();
 			break;
 		}
@@ -164,33 +162,63 @@ bool CustomPropertyOptionsDialog::execute(QtnCustomPropertyData &result)
 	return false;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void CustomPropertyOptionsDialog::setType(QVariant::Type type)
+#else
+void CustomPropertyOptionsDialog::setType(QMetaType::Type type)
+#endif
 {
 	switch (type)
 	{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::List:
+#else
+		case QMetaType::QVariantList:
+#endif
 			ui->rbList->setChecked(true);
 			break;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Map:
+#else
+		case QMetaType::QVariantMap:
+#endif
 			ui->rbDictionary->setChecked(true);
 			break;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Bool:
+#else
+		case QMetaType::Bool:
+#endif
 			ui->rbBoolean->setChecked(true);
 			break;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::Int:
 		case QVariant::UInt:
 		case QVariant::LongLong:
 		case QVariant::ULongLong:
 		case QVariant::Double:
+#else
+		case QMetaType::Int:
+		case QMetaType::UInt:
+		case QMetaType::LongLong:
+		case QMetaType::ULongLong:
+		case QMetaType::Double:
+#endif
 			ui->rbNumeric->setChecked(true);
 			break;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		case QVariant::String:
 		case QVariant::Char:
 		case QVariant::Color:
+#else
+		case QMetaType::QString:
+		case QMetaType::QChar:
+		case QMetaType::QColor:
+#endif
 			ui->rbString->setChecked(true);
 			break;
 
